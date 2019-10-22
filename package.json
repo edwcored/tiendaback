@@ -1,0 +1,27 @@
+{
+  "name": "debk",
+  "version": "1.0.0",
+  "description": "backedn para de",
+  "main": "server.js",
+  "scripts": {
+    "start": "nodemon server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "EDWUIN ELIAS CORTES VALENCIA",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.18.3",
+    "compression": "^1.7.4",
+    "cors": "^2.8.5",
+    "crypto": "^1.0.1",
+    "express": "^4.16.4",
+    "helmet": "^3.16.0",
+    "jsonwebtoken": "^8.5.1",
+    "moment": "^2.24.0",
+    "mongodb": "^3.2.3",
+    "node-adodb": "^5.0.2",
+    "nodemailer": "^6.0.0",
+    "nodemon": "^1.18.10",
+    "soap": "^0.29.0"
+  }
+}
