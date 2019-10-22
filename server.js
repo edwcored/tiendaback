@@ -42,9 +42,6 @@ app.use('/api/geografia', geografia);
 const utilidades = require('./routes/utilidades');
 app.use('/api/utilidades', utilidades);
 
-const fe = require('./routes/facturaElectronica');
-app.use('/api/fe', fe);
-
 
 app.use('/images', express.static(CONFIG.RUTAIMG));
 
