@@ -147,22 +147,6 @@ router.post('/requestChangePassword', async (req, res) => {
     }
 })
 
-router.post('/getcliente', vt.validateToken, async (req, res) => {
-    try {
-        let respuesta = {
-            result: true,
-            resultCode: RESULTS.OK
-        };
-
-        respuesta.data = await personaModel.getcliente(req.nui);
-
-        res.status(200).json(respuesta);
-    } catch (e) {
-        res.status(200).json({ result: false, resultCode: RESULTS.ERROR, message: e.message });
-    }
-})
-
-
 router.post('/persona5', vt.validateToken, async (req, res) => {
     try {
         let respuesta = {
@@ -178,12 +162,6 @@ router.post('/persona5', vt.validateToken, async (req, res) => {
     }
 })
 
-function sleep(ms){
-    return new Promise(resolve=>{
-        setTimeout(resolve,ms)
-    })
-}
-
 router.post('/get', vt.validateToken, async (req, res) => {
     try {
         let respuesta = {
@@ -195,11 +173,10 @@ router.post('/get', vt.validateToken, async (req, res) => {
             respuesta.resultCode = RESULTS.JSONINVALID;
             respuesta.result = false;
         } else {
-            const ret = await personaModel.getEmp(req.body.nui);
+            const ret = await personaModel.get(req.body.nui);
             if (ret !== undefined && ret !== null)
             {
                 ret.pwd = undefined;
-                ret.emps = ret.emps.find((x) => x.nui == req.session.nuiemp);    
             }
             respuesta.data = ret;
         }
