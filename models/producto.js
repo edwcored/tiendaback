@@ -5,6 +5,19 @@ const faker = require('faker');
 
 var dbobj = {};
 
+dbobj.create = async (datos) => {
+    try {
+        db = Helper.getInstance();
+        let ret = await db.collection("productos").insertOne(datos);
+        if (ret && ret.insertedCount > 0)
+            return true;
+        else
+            return false;
+    } catch (error) {
+        console.log(error);
+    }
+}
+
 dbobj.get = async (lid) => {
     try {
         db = Helper.getInstance();
