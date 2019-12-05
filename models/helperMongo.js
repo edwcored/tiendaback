@@ -12,7 +12,7 @@ dbobj.db = null;
 dbobj.initPool = async () => {
   try {
     // Use connect method to connect to the Server
-    client = await MongoClient.connect(URL, { useNewUrlParser: true });
+    client = await MongoClient.connect(URL, {useUnifiedTopology: true,  useNewUrlParser: true });
     dbobj.db = client.db(dbName);
   } catch (err) {
     console.log(err.stack);
@@ -21,7 +21,7 @@ dbobj.initPool = async () => {
 
 dbobj.getInstance = () => {
   if (!dbobj.db) {
-    initPool();
+    this.initPool();
   }
 
   return dbobj.db;

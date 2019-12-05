@@ -2,26 +2,29 @@ var Helper = require("./helperMongo");
 
 var dbobj = {};
 
-dbobj.get = async (pnui) => {
+dbobj.get = async (user) => {
     try {
         db = Helper.getInstance();
 
-        const projection = {
-            _id: 0,
-            nui: 1,
-            rs: 1,
-            email: 1,
-            pwd: 1,
-            'emps.nui': 1,
-            'emps.rs': 1,
-            'emps.roles': 1
-        };
-
-        let ret = await db.collection("personas").find({ nui: pnui }).project(projection).toArray();
+        let ret = await db.collection("personas").find({ user: user }).toArray();
         if (ret && ret.length > 0)
             return ret[0];
         else
             return null;
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+dbobj.create = async (datos) => {
+    try {
+        db = Helper.getInstance();
+        let ret = await db.collection("personas").insertOne(datos);
+        if (ret && ret.insertedCount > 0) {
+            return true;
+        } else {
+            return false
+        };
     } catch (error) {
         console.log(error);
     }

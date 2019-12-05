@@ -1,7 +1,6 @@
 var Helper = require("./helperMongo");
 
 var dbobj = {};
-const resumen = { nom: 1, pres: { sku: 1, defimg: 1 } };
 
 dbobj.list = async (pdom) => {
     try {

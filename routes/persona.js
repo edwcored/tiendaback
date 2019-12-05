@@ -13,22 +13,18 @@ router.post('/login', async (req, res) => {
             resultCode: RESULTS.OK
         }
 
-        if (!req.body.nui || !req.body.pwd) {
+        if (!req.body.user || !req.body.password) {
             respuesta.resultCode = RESULTS.JSONINVALID;
             respuesta.result = false;
         } else {
-            const persona = await personaModel.get(req.body.nui);
+            const persona = await personaModel.get(req.body.user);
             if (persona && persona != null) {
-                if (persona.pwd) {
-                    const hash = cryptoHelper.md5(req.body.pwd);
-                    if (hash === persona.pwd) {
-                        persona.pwd = undefined;
-                        respuesta.data = persona;
-                    } else {
-                        respuesta.resultCode = RESULTS.PASSWORDINVALID;
-                    }
+                const hash = cryptoHelper.md5(req.body.password);
+                if (hash === persona.password) {
+                    persona.password = undefined;
+                    respuesta.data = persona;
                 } else {
-                    respuesta.resultCode = RESULTS.CHANGEPASSWORD;
+                    respuesta.resultCode = RESULTS.PASSWORDINVALID;
                 }
             } else {
                 respuesta.resultCode = RESULTS.USERINVALID;
@@ -147,6 +143,29 @@ router.post('/requestChangePassword', async (req, res) => {
     }
 })
 
+
+router.post('/crearPersona', async (req, res) => {
+    try {
+        let respuesta = {
+            result: true
+        }
+        let result = await personaModel.get(req.body.user);
+
+        if (result && result !== null) {
+            respuesta.resultCode = RESULTS.REPITED;
+        } else {
+            req.body.password = cryptoHelper.md5(req.body.password);
+            req.body.password2 = undefined;
+
+            result = await personaModel.create(req.body);
+            respuesta.resultCode = RESULTS.OK;
+        }
+        res.status(200).json(respuesta);
+    } catch (e) {
+        res.status(200).json({ result: false, resultCode: RESULTS.ERROR, message: e.message });
+    }
+})
+
 router.post('/persona5', vt.validateToken, async (req, res) => {
     try {
         let respuesta = {
@@ -174,8 +193,7 @@ router.post('/get', vt.validateToken, async (req, res) => {
             respuesta.result = false;
         } else {
             const ret = await personaModel.get(req.body.nui);
-            if (ret !== undefined && ret !== null)
-            {
+            if (ret !== undefined && ret !== null) {
                 ret.pwd = undefined;
             }
             respuesta.data = ret;

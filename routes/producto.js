@@ -12,7 +12,7 @@ router.post('/getn', async (req, res) => {
         }
 
         
-        respuesta.data = await productoModel.list(req.body);
+        respuesta.data = await productoModel.getn(req.body);
         res.status(200).json(respuesta);
     } catch (e) {
         res.status(200).json({ result: false, resultCode: RESULTS.ERROR, message: e.message });
@@ -34,5 +34,19 @@ router.post('/get', vt.validateToken, async (req, res) => {
     }
 })
 
+router.get('/generar100', async (req, res) => {
+    try {
+        let respuesta = {
+            result: true,
+            resultCode: RESULTS.OK
+        };
+
+        respuesta.data = await productoModel.generar100(req.body.id);
+
+        res.status(200).json(respuesta);
+    } catch (e) {
+        res.status(200).json({ result: false, resultCode: RESULTS.ERROR, message: e.message });
+    }
+})
 
 module.exports = router;
