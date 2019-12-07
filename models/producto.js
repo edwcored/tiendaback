@@ -18,6 +18,25 @@ dbobj.create = async (datos) => {
     }
 }
 
+dbobj.categorias = async (datos) => {
+    try {
+        db = Helper.getInstance();
+
+        if (datos.length > 0) {
+            let filtro = {};
+            for (let i = 0; i < datos.length; i++) {
+                filtro["miga" + i] = datos[i];
+            }
+            return await db.collection("productos").distinct('miga' + (datos.length), filtro);
+        } else {
+            return await db.collection("productos").distinct('miga0');
+        }
+
+    } catch (error) {
+        console.log(error);
+    }
+}
+
 dbobj.get = async (lid) => {
     try {
         db = Helper.getInstance();
@@ -41,13 +60,15 @@ dbobj.getn = async function (parametros) {
         db = Helper.getInstance();
         let filtro = {};
         if (parametros.nombre) {
-            filtro.nombre = parametros.nombre;
+            filtro.nombre = new RegExp(".*" + parametros.nombre + ".*", 'i');
         }
-        if (parametros.clasificacion) {
-            filtro.clasificacion = parametros.clasificacion
+        if (parametros.categorias && parametros.categorias.length > 0) {
+            for (let i = 0; i < parametros.categorias.length; i++) {
+                filtro["miga" + i] = parametros.categorias[i];
+            }
         }
 
-        let resumen = { nombre: 1, precio: 1, clasificacion: 1, descripcion: 1 }
+        let resumen = { nombre: 1, precio: 1, miga: 1, descripcion: 1 }
 
         const res = await db.collection("productos").find(filtro, resumen)
             .skip((parametros.index * parametros.tamano))
@@ -79,7 +100,7 @@ dbobj.generar100 = async () => {
     const clasificaciones = await db.collection("productos").distinct('clasificacion');
     if (clasificaciones && clasificaciones.length > 0) {
         for (let j = 0; j < clasificaciones.length; j++) {
-            await db.collection("dominiovalor").insertOne({dom: "clasificacion", cod: j, nom: clasificaciones[j]})
+            await db.collection("dominiovalor").insertOne({ dom: "clasificacion", cod: j, nom: clasificaciones[j] })
         }
     }
 }

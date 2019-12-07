@@ -18,7 +18,7 @@ dbobj.get = async (id) => {
 dbobj.getByNui = async (pnui) => {
     try {
         db = Helper.getInstance();
-        let ret = await db.collection("sessions").find({ n: pnui }).toArray();
+        let ret = await db.collection("sessions").find({ u: pnui }).toArray();
         if (ret && ret.length > 0)
             return ret[0];
         else
@@ -40,7 +40,7 @@ dbobj.saveHitory = async function (ses) {
 dbobj.delete = async (pnui) => {
     try {
         db = Helper.getInstance();
-        await db.collection("sessions").deleteMany({ n: pnui });
+        await db.collection("sessions").deleteMany({ u: pnui });
     } catch (error) {
         console.log(error);
     }
@@ -58,7 +58,7 @@ dbobj.insert = async (data) => {
 dbobj.update = async (pnui, pexp) => {
     try {
         db = Helper.getInstance();
-        await db.collection("sessions").updateOne({ n: pnui }, { $set: { exp: pexp } });
+        await db.collection("sessions").updateOne({ u: pnui }, { $set: { exp: pexp } });
     } catch (error) {
         console.log(error);
     }

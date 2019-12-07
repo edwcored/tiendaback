@@ -33,6 +33,9 @@ app.use('/api/persona', persona);
 const producto = require('./routes/producto');
 app.use('/api/productos', producto);
 
+const cesta = require('./routes/cesta');
+app.use('/api/cesta', cesta);
+
 const dominiovalor = require('./routes/dominiovalor');
 app.use('/api/dominiovalor', dominiovalor);
 

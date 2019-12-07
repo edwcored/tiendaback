@@ -7,10 +7,9 @@ const MinutosSession = 1440;
 
 var TokenUtils = {};
 
-TokenUtils.createToken = async function (pnui, ipAddres, pnuiemp, rol, force) {
+TokenUtils.createToken = async function (user, ipAddres, rol, force) {
     var payload = {
-        n: pnui,
-        ne: pnuiemp,
+        u: user,
         r: rol,
         ip: ipAddres,
         cd: new Date(),
@@ -22,12 +21,12 @@ TokenUtils.createToken = async function (pnui, ipAddres, pnuiemp, rol, force) {
     //payload.token = strtoken;
     try {
         //validate that a session it's not created before
-        const sessionInBd = await sesion.getByNui(pnui);
+        const sessionInBd = await sesion.getByNui(user);
         if (sessionInBd && sessionInBd != null) {
             var minutesToNow = (new Date().getTime() - sessionInBd.exp.getTime()) / (60 * 1000);
             if (minutesToNow > MinutosSession || force === true) {
                 await sesion.saveHitory(payload);
-                await sesion.delete(pnui);
+                await sesion.delete(user);
                 inserted = await sesion.insert(payload);
             } else {
                 if (sessionInBd.ip !== ipAddres) {
@@ -37,7 +36,7 @@ TokenUtils.createToken = async function (pnui, ipAddres, pnuiemp, rol, force) {
                     };
                 } else {
                     await sesion.saveHitory(payload);
-                    await sesion.delete(pnui);
+                    await sesion.delete(user);
                     inserted = await sesion.insert(payload);
                 }
             }
@@ -49,6 +48,10 @@ TokenUtils.createToken = async function (pnui, ipAddres, pnuiemp, rol, force) {
     } catch (e) {
         return null;
     }
+}
+
+TokenUtils.getPayload = async function(req) {
+    payload = await sesion.get(req.headers['token'])
 }
 
 TokenUtils.validateToken = async function (req, res, next) {
@@ -67,7 +70,7 @@ TokenUtils.validateToken = async function (req, res, next) {
 
     if (payload && payload !== null) {
         //validate ip addres
-        var currentIp = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+        var currentIp = rq.headers['x-forwarded-for'] || req.connection.remoteAddress;
         if (payload.ip !== currentIp) {
             return res.status(200).send({ result: false, resultCode: RESULTS.INVALIDIP });
         }
@@ -77,17 +80,16 @@ TokenUtils.validateToken = async function (req, res, next) {
 
         if (minutesToNow > 1440) {
             //droop session
-            sesion.delete(payload.n);
+            sesion.delete(payload.u);
             return res.status(200).send({ result: false, resultCode: RESULTS.TOKENEXPIRED });
         }
         else {
             //renew the token
             req.session = {
-                nui: payload.n,
-                nuiemp: payload.ne,
+                user: payload.u,
                 rol: payload.r
             };
-            await sesion.update(payload.n, new Date(new Date().getTime() + (MinutosSession * 60 * 1000)));
+            await sesion.update(payload.u, new Date(new Date().getTime() + (MinutosSession * 60 * 1000)));
             next();
         }
     } else {
