@@ -7,11 +7,20 @@ const MinutosSession = 1440;
 
 var TokenUtils = {};
 
-TokenUtils.createToken = async function (user, ipAddres, rol, force) {
+TokenUtils.createToken = async function (req, user, force) {
+    let rol = "";
+    // solo se manejaran dos roles, user y admin y solo un usuario puede ser admin
+    if (user === "admin") {
+        rol = "admin"
+    } else {
+        rol = "user";
+    }
+    var currentIp = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+        
     var payload = {
         u: user,
         r: rol,
-        ip: ipAddres,
+        ip: currentIp,
         cd: new Date(),
         exp: new Date(new Date().getTime() + (MinutosSession * 60 * 1000))
     };
@@ -51,7 +60,7 @@ TokenUtils.createToken = async function (user, ipAddres, rol, force) {
 }
 
 TokenUtils.getPayload = async function(req) {
-    payload = await sesion.get(req.headers['token'])
+    payload = await sesion.get(req)
 }
 
 TokenUtils.validateToken = async function (req, res, next) {

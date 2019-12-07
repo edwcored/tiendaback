@@ -4,7 +4,7 @@ var router = express.Router();
 var personaModel = require('../models/persona.js');
 var cryptoHelper = require('../utils/CryptoHelper');
 const RESULTS = require('../utils/Constantes')
-const vt = require('./tokenUtils');
+const tokenUtils = require('./tokenUtils');
 
 router.post('/login', async (req, res) => {
     try {
@@ -22,6 +22,9 @@ router.post('/login', async (req, res) => {
                 const hash = cryptoHelper.md5(req.body.password);
                 if (hash === persona.password) {
                     persona.password = undefined;
+
+                    persona.token = await tokenUtils.createToken(req, persona.user, false);
+                    console.log(persona.token);
                     respuesta.data = persona;
                 } else {
                     respuesta.resultCode = RESULTS.PASSWORDINVALID;
@@ -54,7 +57,7 @@ router.post('/getToken', async (req, res) => {
                     if (hash === persona.pwd) {
                         var currentIp = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
                         respuesta.data = {};
-                        respuesta.data.token = await vt.createToken(req.body.nui, currentIp, req.body.nuiemp, req.body.rol, false);
+                        respuesta.data.token = await tokenUtils.createToken(req.body.nui, currentIp, req.body.nuiemp, req.body.rol, false);
                         respuesta.data.menudef = [];// await RolModel.getPermisions(req.body.nuiemp, req.body.rol);
                     } else {
                         respuesta.resultCode = RESULTS.PASSWORDINVALID;
@@ -166,7 +169,7 @@ router.post('/crearPersona', async (req, res) => {
     }
 })
 
-router.post('/persona5', vt.validateToken, async (req, res) => {
+router.post('/persona5', tokenUtils.validateToken, async (req, res) => {
     try {
         let respuesta = {
             result: true,
@@ -181,7 +184,7 @@ router.post('/persona5', vt.validateToken, async (req, res) => {
     }
 })
 
-router.post('/get', vt.validateToken, async (req, res) => {
+router.post('/get', tokenUtils.validateToken, async (req, res) => {
     try {
         let respuesta = {
             result: true,
@@ -204,7 +207,7 @@ router.post('/get', vt.validateToken, async (req, res) => {
     }
 })
 
-router.post('/merge', vt.validateToken, async (req, res) => {
+router.post('/merge', tokenUtils.validateToken, async (req, res) => {
     try {
         let respuesta = {
             result: true,

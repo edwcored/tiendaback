@@ -38,15 +38,47 @@ dbobj.getProd = async (datos) => {
     }
 }
 
-dbobj.insert = async (datos) => {
+dbobj.updateUser = async (user, ip) => {
     try {
         db = Helper.getInstance();
-        datos.idProd = Helper.getId(datos.idProd);
-        let ret = await db.collection("cesta").insertOne(datos);
-        if (ret && ret.insertedCount > 0)
-            return true;
-        else
-            return false;
+
+        const dat = await db.collection("cesta").updateMany({ip: ip}, { $set: {user: user}});
+        return dat;
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+dbobj.delete = async (user) => {
+    try {
+        db = Helper.getInstance();
+
+        const dat = await db.collection("cesta").deleteMany({user: user});
+        return dat;
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+dbobj.getAll = async (datos) => {
+    try {
+        db = Helper.getInstance();
+
+        const dat = await db.collection("cesta").find(datos).toArray();
+        return dat;
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+dbobj.remove = async (datos) => {
+    try {
+        db = Helper.getInstance();
+        var query = {
+            user: datos.user
+        };
+
+        const dat = await db.collection("cesta").deleteMany(query);
     } catch (error) {
         console.log(error);
     }
@@ -55,7 +87,7 @@ dbobj.insert = async (datos) => {
 dbobj.update = async (datos) => {
     try {
         db = Helper.getInstance();
-        let ret = await db.collection("cesta").replaceOne({_id: Helper.getId(datos._id)}, datos);
+        let ret = await db.collection("cesta").replaceOne({ _id: Helper.getId(datos._id) }, datos);
         if (ret && ret.matchedCount > 0)
             return true;
         else
