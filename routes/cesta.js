@@ -17,9 +17,9 @@ router.post('/add', async (req, res) => {
         let prod = { idProd: req.body._id };
         // si ya inicio sesion
         if (req.headers.token) {
-            const payload = await vt.getPayload(req.headers.token);
+            const payload = await sesion.get(req.headers.token);
             prod.ip = payload.ip;
-            prod.user = payload.user
+            prod.user = payload.u
         } else {
             prod.ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
         }
@@ -68,8 +68,8 @@ router.post('/get', async (req, res) => {
         let prod = {};
         // si ya inicio sesion
         if (req.headers.token) {
-            const payload = await vt.getPayload(req.headers.token);
-            prod.user = payload.user
+            const payload = await sesion.get(req.headers.token);
+            prod.user = payload.u
         } else {
             prod.ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
         }
@@ -77,6 +77,35 @@ router.post('/get', async (req, res) => {
         // se consulta si ya esta agregado este producto para este cliente
         respuesta.data = await cestaModel.getAll(prod);
 
+        res.status(200).json(respuesta);
+    } catch (e) {
+        res.status(200).json({ result: false, resultCode: RESULTS.ERROR, message: e.message });
+    }
+})
+
+router.post('/validarcupon', async (req, res) => {
+    try {
+        let respuesta = {
+            result: true,
+            resultCode: RESULTS.OK
+        }
+
+        respuesta.data = await cestaModel.getCupon(req.body.cupon);
+        // si existe el cupon pongalo en pendiente para aplicarlo a la compra actual
+        if(respuesta.data) {
+            const dataCupon = { 
+                cupon: respuesta.cupon,
+                valor: respuesta.valor,
+                ip: req.headers['x-forwarded-for'] || req.connection.remoteAddress 
+            };
+
+            if (req.headers.token) {
+                const payload = await sesion.get(req.headers.token);
+                prod.user = payload.u
+            }
+            
+            await cestaModel.setCupon(dataCupon);
+        }
         res.status(200).json(respuesta);
     } catch (e) {
         res.status(200).json({ result: false, resultCode: RESULTS.ERROR, message: e.message });
@@ -101,8 +130,11 @@ router.post('/finish', async (req, res) => {
             res.status(200).json({ result: false, resultCode: RESULTS.ERROR, message: 'No se ha iniciado sesion' });
         }
 
-
-        await cestaModel.updateUser(prod.user, req.headers['x-forwarded-for'] || req.connection.remoteAddress)
+        // se debe actualizar el usuario dado que se pueden agregar elementos al carrito sin haber iniciado sesion
+        await cestaModel.updateUser(prod.user, req.headers['x-forwarded-for'] || req.connection.remoteAddress);
+        // se debe actualizar el cupon pendinete por usar dado q se pudo aplicar sin iniciar sesion
+        await cestaModel.updateUserCupon(prod.user, req.headers['x-forwarded-for'] || req.connection.remoteAddress);
+        
         const pr = await cestaModel.getAll(prod);
         if (pr && pr.length) {
             let dataCompra = {
@@ -123,8 +155,14 @@ router.post('/finish', async (req, res) => {
                 dataCompra.total += element.total;
             });
 
+            const cupon = await cestaModel.getPendingCupon(prod.user);
+            if(cupon) {
+                dataCompra.cupon = cupon;
+            }
+            
             const res = await comprasModel.insert(dataCompra);
             await cestaModel.delete(prod.user);
+            await cestaModel.limpiarCupon(prod.user);
             
             if (!res) {
                 respuesta.resultCode = RESULTS.NOAFECTED;
