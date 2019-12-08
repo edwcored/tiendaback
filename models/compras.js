@@ -1,4 +1,5 @@
 var Helper = require("./helperMongo");
+var sesion = require('../models/sesion');
 
 var dbobj = {};
 
@@ -15,23 +16,19 @@ dbobj.insert = async (datos) => {
     }
 }
 
-dbobj.getAll = async () => {
+dbobj.getAll = async (token) => {
     try {
         db = Helper.getInstance();
-        var query = {
-            ip: datos.ip,
-            idProd: Helper.getId(datos.idProd)
-        };
 
-        if (datos.user) {
-            query.user = datos.user;
-        }
-
-        const dat = await db.collection("compras").find(query).toArray();
-        if (dat && dat.length > 0) {
-            return dat[0];
+        if (token) {
+            let payload = await sesion.get(token);
+            var query = {
+                user: payload.u
+            };
+            console.log(query)
+            return await db.collection("compras").find(query).toArray();
         } else {
-            return null;
+            res.status(200).json({ result: false, resultCode: RESULTS.ERROR, message: 'No se ha iniciado sesion' });
         }
     } catch (error) {
         console.log(error);

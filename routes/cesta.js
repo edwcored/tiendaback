@@ -106,7 +106,7 @@ router.post('/finish', async (req, res) => {
         const pr = await cestaModel.getAll(prod);
         if (pr && pr.length) {
             let dataCompra = {
-                user: payload.user,
+                user: payload.u,
                 fecha: new Date(),
                 subtotal: 0,
                 iva: 0,
