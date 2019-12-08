@@ -25,7 +25,6 @@ dbobj.getAll = async (token) => {
             var query = {
                 user: payload.u
             };
-            console.log(query)
             return await db.collection("compras").find(query).toArray();
         } else {
             res.status(200).json({ result: false, resultCode: RESULTS.ERROR, message: 'No se ha iniciado sesion' });
