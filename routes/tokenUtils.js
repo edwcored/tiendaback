@@ -10,7 +10,7 @@ var TokenUtils = {};
 TokenUtils.createToken = async function (req, user, force) {
     let rol = "";
     // solo se manejaran dos roles, user y admin y solo un usuario puede ser admin
-    if (user === "admin") {
+    if (user === "admin@admin") {
         rol = "admin"
     } else {
         rol = "user";
